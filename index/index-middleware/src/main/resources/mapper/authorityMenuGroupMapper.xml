@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.middleware.mapper.AuthorityMenuGroupMapper">
+    <resultMap  id="menuResultMap" type="com.shenghe.index.common.entity.AuthorityMenuGroup">
+        <id column="id" property="id"/>
+        <result column="menu_id" property="menuId"/>
+        <result column="group_id" property="groupId"/>
+    </resultMap>
+
+    <sql id="allColumns">
+        id,menu_id,group_id
+    </sql>
+    <select id="getDataList" resultMap="menuResultMap" parameterType="java.util.Map" >
+        select
+        <include refid="allColumns"/>
+        from authority_menu_group auth_m_g where 1=1
+        <if test="id !=null">
+            AND auth_m_g.id = #{id}
+        </if>
+        <if test="menuId !=null">
+            AND auth_m_g.menu_id = #{menuId}
+        </if>
+        <if test="groupId !=null">
+            AND auth_m_g.group_id = #{groupId}
+        </if>
+    </select>
+
+    <update id="setData" parameterType="java.util.Map">
+        UPDATE
+        user_group u_g SET
+        u_g.id = #{id}
+        <if test="groupName != null">,u_g.group_name = #{groupName}</if>
+        <if test="createUserId != null">,u_g.create_user_id = #{createUserId}</if>
+        <if test="createTime != null">,u_g.create_time = #{createTime}</if>
+        WHERE
+        u_g.id = #{id}
+    </update>
+
+    <delete id="removeData" parameterType="java.util.Map">
+        DELETE FROM
+        authority_menu_group  WHERE
+        1 = 1
+        <if test="id !=null">
+            AND id = #{id}
+        </if>
+        <if test="menuId !=null">
+            AND menu_id = #{menuId}
+        </if>
+        <if test="groupId !=null">
+            AND group_id = #{groupId}
+        </if>
+    </delete>
+
+    <!--   默认增加一个列表list -->
+    <insert id="addData" parameterType="java.util.Map">
+        INSERT INTO authority_menu_group(menu_id,group_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator="," >
+            (#{item.menuId},#{item.groupId})
+        </foreach>
+    </insert>
+</mapper>

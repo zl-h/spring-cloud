@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.middleware.mapper.MenuMapper">
+    <resultMap id="resultMap" type="com.shenghe.index.common.entity.Menu">
+        <id column="id" property="id"/>
+        <result column="menu_name" property="menuName"/>
+        <result column="menu_url" property="menuUrl"/>
+        <result column="parent_menu" property="parentMenu"/>
+        <result column="sort" property="sort"/>
+        <result column="create_user_id" property="createUserId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="menu_type" property="menuType"/>
+        <result column="menu_index" property="menuIndex"/>
+        <result column="show_groups" property="showGroups"/>
+        <result column="language_id" property="languageId"/>
+        <result column="language_id_desc" property="languageIdDesc"/>
+    </resultMap>
+
+    <sql id="allColumns">
+        id,menu_name,menu_url,parent_menu,sort,create_time,menu_type,create_user_id,menu_index,show_groups
+    </sql>
+
+    <select id="getDataList" resultMap="resultMap" parameterType="java.util.Map">
+
+        <choose>
+            <when test="userId !=nul and languageId != null">
+                select distinct m.* from menu m
+                INNER join authority_menu_group a_m_g on m.`id` = a_m_g.`menu_id`
+                INNER JOIN authority_user_group a_u_g on a_u_g.`group_id` = a_m_g.`group_id`
+                where a_u_g.`user_id` = #{userId}
+                AND  m.language_id = #{languageId}
+                ORDER BY m.menu_index ASC
+            </when>
+            <otherwise>
+                select distinct
+                m.id,m.menu_name,m.menu_url,m.parent_menu,m.sort,m.create_time,m.menu_type,m.create_user_id,m.menu_index,
+                group_concat(u_g.`group_name` order by u_g.`group_name` asc) as show_groups,m.language_id,u_l.user_language AS language_id_desc
+                from menu m
+                LEFT JOIN user_language u_l on m.language_id = u_l.id
+                LEFT JOIN authority_menu_group a_m_g on m.`id` = a_m_g.`menu_id`
+                left join user_group u_g on u_g.`id` = a_m_g.`group_id`
+
+                where 1=1
+                <if test='id !=null and id != ""'>
+
+                    <choose>
+                        <when test='idCompare == "&gt;"'>AND m.id &gt; #{id} </when>
+                        <when test='idCompare == "&gt;="'>AND m.id &gt;= #{id} </when>
+                        <when test='idCompare == "="'>AND m.id = #{id} </when>
+                        <when test='idCompare == "&lt;"'>AND m.id &lt; #{id} </when>
+                        <when test='idCompare == "&lt;="'>AND m.id &lt;=  #{id}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.id = #{id}
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='menuName !=null and menuName != ""'>
+                    <choose>
+                        <when test='menuNameCompare == "like"'>AND m.menu_name like '%${menuName}%' </when>
+                        <when test='menuNameCompare == "not like"'>AND m.menu_name not like '%${menuName}%' </when>
+                        <when test='menuNameCompare == "&gt;"'>AND m.menu_name &gt; #{menuName} </when>
+                        <when test='menuNameCompare == "&gt;="'>AND m.menu_name &gt;= #{menuName} </when>
+                        <when test='menuNameCompare == "="'>AND m.menu_name = #{menuName} </when>
+                        <when test='menuNameCompare == "&lt;"'>AND m.menu_name &lt; #{menuName} </when>
+                        <when test='menuNameCompare == "&lt;="'>AND m.menu_name &lt;=  #{menuName}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menuName LIKE '%${menuName}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test = 'menuUrl !=null and menuUrl != ""'>
+
+                    <choose>
+                        <when test='menuUrlCompare == "like"'>AND m.menu_url like '%${menuUrl}%' </when>
+                        <when test='menuUrlCompare == "not like"'>AND m.menu_url not like '%${menuUrl}%' </when>
+                        <when test='menuUrlCompare == "&gt;"'>AND m.menu_url &gt; #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&gt;="'>AND m.menu_url &gt;= #{menuUrl} </when>
+                        <when test='menuUrlCompare == "="'>AND m.menu_url = #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&lt;"'>AND m.menu_url &lt; #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&lt;="'>AND m.menu_url &lt;=  #{menuUrl}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_url LIKE '%${menuUrl}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='sort !=null and sort != ""'>
+
+                    <choose>
+                        <when test='sortCompare == "&gt;"'>AND m.sort &gt; #{sort} </when>
+                        <when test='sortCompare == "&gt;="'>AND m.sort &gt;= #{sort} </when>
+                        <when test='sortCompare == "="'>AND m.sort = #{sort} </when>
+                        <when test='sortCompare == "&lt;"'>AND m.sort &lt; #{sort} </when>
+                        <when test='sortCompare == "&lt;="'>AND m.sort &lt;=  #{sort}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.sort = #{sort}
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='menuType !=null and menuType != ""'>
+
+                    <choose>
+                        <when test='menuTypeCompare == "like"'>AND m.menu_type like '%${menuType}%' </when>
+                        <when test='menuTypeCompare == "not like"'>AND m.menu_type not like '%${menuType}%' </when>
+                        <when test='menuTypeCompare == "&gt;"'>AND m.menu_type &gt; #{menuType} </when>
+                        <when test='menuTypeCompare == "&gt;="'>AND m.menu_type &gt;= #{menuType} </when>
+                        <when test='menuTypeCompare == "="'>AND m.menu_type = #{menuType} </when>
+                        <when test='menuTypeCompare == "&lt;"'>AND m.menu_type &lt; #{menuType} </when>
+                        <when test='menuTypeCompare == "&lt;="'>AND m.menu_type &lt;=  #{menuType}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_type LIKE '%${menuType}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test = 'menuIndex !=null and menuIndex != ""'>
+
+                    <choose>
+                        <when test='menuIndexCompare == "like"'>AND m.menu_index like '%${menuIndex}%' </when>
+                        <when test='menuIndexCompare == "not like"'>AND m.menu_index not like '%${menuIndex}%' </when>
+                        <when test='menuIndexCompare == "&gt;"'>AND m.menu_index &gt; #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&gt;="'>AND m.menu_index &gt;= #{menuIndex} </when>
+                        <when test='menuIndexCompare == "="'>AND m.menu_index = #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&lt;"'>AND m.menu_index &lt; #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&lt;="'>AND m.menu_index &lt;=  #{menuIndex}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_index= #{menuIndex}
+                        </otherwise>
+                    </choose>
+                </if>
+                <!-- 查询指定用户组的菜单时 -->
+                <if test="groupIdList !=null  and groupIdList.size() > 0">
+                    AND a_m_g.group_id IN
+                    (
+                    <foreach collection="groupIdList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                <if test='languageId !=null and languageId != ""'>
+                    and m.language_id = #{languageId}
+                </if>
+
+                <if test="languageIdList !=null  and languageIdList.size() > 0">
+                    AND m.language_id IN
+                    (
+                    <foreach collection="languageIdList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                <if test="idList !=null  and idList.size() > 0">
+                    AND m.id IN
+                    (
+                    <foreach collection="idList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                group by m.`id`
+
+                ORDER BY
+                
+                <if test='sort1 !=null and sort1 != ""  and sortDescAsc1 != null and sortDescAsc1 != ""'>
+                  <!--  #{sort1} #{sortDescAsc1}-->
+                    <if test='sort1 == "id"  '> m.id</if>
+                    <if test='sort1 == "menuName"  '> m.menu_name</if>
+                    <if test='sort1 == "menuUrl"  '> m.menu_url</if>
+                    <if test='sort1 == "sort"  '>,m.sort</if>
+                    <if test='sort1 == "menuType"  '> m.menu_type</if>
+                    <if test='sort1 == "menuIndex"  '> m.menu_index</if>
+                    <if test='sort1 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc)</if>
+                    <if test='sort1 == "languageIdDesc"  '> u_l.user_language</if>
+                    
+                    <if test='sortDescAsc1 == "desc"'> DESC , </if>
+                    <if test='sortDescAsc1 == "asc"'> ASC ,</if>
+                </if>
+
+                <if test='sort2 !=null and sort2 != ""  and sortDescAsc2 != null and sortDescAsc2 != ""'>
+
+                    <if test='sort2 == "id"  '> m.id</if>
+                    <if test='sort2 == "menuName"  '> m.menu_name</if>
+                    <if test='sort2 == "menuUrl"  '> m.menu_url</if>
+                    <if test='sort2 == "sort"  '>,m.sort</if>
+                    <if test='sort2 == "menuType"  '> m.menu_type</if>
+                    <if test='sort2 == "menuIndex"  '> m.menu_index</if>
+                    <if test='sort2 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc)</if>
+                    <if test='sort2 == "languageIdDesc"  '> u_l.user_language</if>
+
+                    <if test='sortDescAsc2 == "desc"'> DESC ,</if>
+                    <if test='sortDescAsc2 == "asc"'> ASC , </if>
+
+                </if>
+                1
+
+               <!-- <if test="menuIndex !=null">
+                 AND m.menu_index =#{menuIndex}
+                </if>-->
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getDataListCount" resultType="java.lang.Long" parameterType="java.util.Map">
+        <choose>
+            <when test="userId !=nul and languageId != null">
+                select distinct m.* from menu m
+                INNER join authority_menu_group a_m_g on m.`id` = a_m_g.`menu_id`
+                INNER JOIN authority_user_group a_u_g on a_u_g.`group_id` = a_m_g.`group_id`
+                where a_u_g.`user_id` = #{userId}
+                AND  m.language_id = #{languageId}
+                ORDER BY m.menu_index ASC
+            </when>
+            <otherwise>
+                select count(*) FROM (
+                select distinct
+                m.id,m.menu_name,m.menu_url,m.parent_menu,m.sort,m.create_time,m.menu_type,m.create_user_id,m.menu_index,
+                group_concat(u_g.`group_name` order by u_g.`group_name` asc) as show_groups,m.language_id,u_l.user_language AS language_id_desc
+                from menu m
+                LEFT JOIN user_language u_l on m.language_id = u_l.id
+                LEFT JOIN authority_menu_group a_m_g on m.`id` = a_m_g.`menu_id`
+                left join user_group u_g on u_g.`id` = a_m_g.`group_id`
+
+                where 1=1
+                <if test='id !=null and id != ""'>
+
+                    <choose>
+                        <when test='idCompare == "&gt;"'>AND m.id &gt; #{id} </when>
+                        <when test='idCompare == "&gt;="'>AND m.id &gt;= #{id} </when>
+                        <when test='idCompare == "="'>AND m.id = #{id} </when>
+                        <when test='idCompare == "&lt;"'>AND m.id &lt; #{id} </when>
+                        <when test='idCompare == "&lt;="'>AND m.id &lt;=  #{id}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.id = #{id}
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='menuName !=null and menuName != ""'>
+                    <choose>
+                        <when test='menuNameCompare == "like"'>AND m.menu_name like '%${menuName}%' </when>
+                        <when test='menuNameCompare == "not like"'>AND m.menu_name not like '%${menuName}%' </when>
+                        <when test='menuNameCompare == "&gt;"'>AND m.menu_name &gt; #{menuName} </when>
+                        <when test='menuNameCompare == "&gt;="'>AND m.menu_name &gt;= #{menuName} </when>
+                        <when test='menuNameCompare == "="'>AND m.menu_name = #{menuName} </when>
+                        <when test='menuNameCompare == "&lt;"'>AND m.menu_name &lt; #{menuName} </when>
+                        <when test='menuNameCompare == "&lt;="'>AND m.menu_name &lt;=  #{menuName}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menuName LIKE '%${menuName}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test = 'menuUrl !=null and menuUrl != ""'>
+
+                    <choose>
+                        <when test='menuUrlCompare == "like"'>AND m.menu_url like '%${menuUrl}%' </when>
+                        <when test='menuUrlCompare == "not like"'>AND m.menu_url not like '%${menuUrl}%' </when>
+                        <when test='menuUrlCompare == "&gt;"'>AND m.menu_url &gt; #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&gt;="'>AND m.menu_url &gt;= #{menuUrl} </when>
+                        <when test='menuUrlCompare == "="'>AND m.menu_url = #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&lt;"'>AND m.menu_url &lt; #{menuUrl} </when>
+                        <when test='menuUrlCompare == "&lt;="'>AND m.menu_url &lt;=  #{menuUrl}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_url LIKE '%${menuUrl}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='sort !=null and sort != ""'>
+
+                    <choose>
+                        <when test='sortCompare == "&gt;"'>AND m.sort &gt; #{sort} </when>
+                        <when test='sortCompare == "&gt;="'>AND m.sort &gt;= #{sort} </when>
+                        <when test='sortCompare == "="'>AND m.sort = #{sort} </when>
+                        <when test='sortCompare == "&lt;"'>AND m.sort &lt; #{sort} </when>
+                        <when test='sortCompare == "&lt;="'>AND m.sort &lt;=  #{sort}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.sort = #{sort}
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test='menuType !=null and menuType != ""'>
+
+                    <choose>
+                        <when test='menuTypeCompare == "like"'>AND m.menu_type like '%${menuType}%' </when>
+                        <when test='menuTypeCompare == "not like"'>AND m.menu_type not like '%${menuType}%' </when>
+                        <when test='menuTypeCompare == "&gt;"'>AND m.menu_type &gt; #{menuType} </when>
+                        <when test='menuTypeCompare == "&gt;="'>AND m.menu_type &gt;= #{menuType} </when>
+                        <when test='menuTypeCompare == "="'>AND m.menu_type = #{menuType} </when>
+                        <when test='menuTypeCompare == "&lt;"'>AND m.menu_type &lt; #{menuType} </when>
+                        <when test='menuTypeCompare == "&lt;="'>AND m.menu_type &lt;=  #{menuType}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_type LIKE '%${menuType}%'
+                        </otherwise>
+                    </choose>
+                </if>
+
+                <if test = 'menuIndex !=null and menuIndex != ""'>
+
+                    <choose>
+                        <when test='menuIndexCompare == "like"'>AND m.menu_index like '%${menuIndex}%' </when>
+                        <when test='menuIndexCompare == "not like"'>AND m.menu_index not like '%${menuIndex}%' </when>
+                        <when test='menuIndexCompare == "&gt;"'>AND m.menu_index &gt; #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&gt;="'>AND m.menu_index &gt;= #{menuIndex} </when>
+                        <when test='menuIndexCompare == "="'>AND m.menu_index = #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&lt;"'>AND m.menu_index &lt; #{menuIndex} </when>
+                        <when test='menuIndexCompare == "&lt;="'>AND m.menu_index &lt;=  #{menuIndex}</when>
+                        <otherwise>
+                            /*默认应该是=*/
+                            AND m.menu_index= #{menuIndex}
+                        </otherwise>
+                    </choose>
+                </if>
+                <!-- 查询指定用户组的菜单时 -->
+                <if test="groupIdList !=null  and groupIdList.size() > 0">
+                    AND a_m_g.group_id IN
+                    (
+                    <foreach collection="groupIdList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                <if test='languageId !=null and languageId != ""'>
+                    and m.language_id = #{languageId}
+                </if>
+
+                <if test="languageIdList !=null  and languageIdList.size() > 0">
+                    AND m.language_id IN
+                    (
+                    <foreach collection="languageIdList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                <if test="idList !=null  and idList.size() > 0">
+                    AND m.id IN
+                    (
+                    <foreach collection="idList" item="item" index="index" separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </if>
+
+                group by m.`id`
+
+                ORDER BY
+
+                <if test='sort1 !=null and sort1 != ""  and sortDescAsc1 != null and sortDescAsc1 != ""'>
+                    <!--  #{sort1} #{sortDescAsc1}-->
+                    <if test='sort1 == "id"  '> m.id</if>
+                    <if test='sort1 == "menuName"  '> m.menu_name</if>
+                    <if test='sort1 == "menuUrl"  '> m.menu_url</if>
+                    <if test='sort1 == "sort"  '>,m.sort</if>
+                    <if test='sort1 == "menuType"  '> m.menu_type</if>
+                    <if test='sort1 == "menuIndex"  '> m.menu_index</if>
+                    <if test='sort1 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc)</if>
+                    <if test='sort1 == "languageIdDesc"  '> u_l.user_language</if>
+
+                    <if test='sortDescAsc1 == "desc"'> DESC , </if>
+                    <if test='sortDescAsc1 == "asc"'> ASC ,</if>
+                </if>
+
+                <if test='sort2 !=null and sort2 != ""  and sortDescAsc2 != null and sortDescAsc2 != ""'>
+
+                    <if test='sort2 == "id"  '> m.id</if>
+                    <if test='sort2 == "menuName"  '> m.menu_name</if>
+                    <if test='sort2 == "menuUrl"  '> m.menu_url</if>
+                    <if test='sort2 == "sort"  '>,m.sort</if>
+                    <if test='sort2 == "menuType"  '> m.menu_type</if>
+                    <if test='sort2 == "menuIndex"  '> m.menu_index</if>
+                    <if test='sort2 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc)</if>
+                    <if test='sort2 == "languageIdDesc"  '> u_l.user_language</if>
+
+                    <if test='sortDescAsc2 == "desc"'> DESC ,</if>
+                    <if test='sortDescAsc2 == "asc"'> ASC , </if>
+
+                </if>
+                1)
+
+
+
+                <!-- <if test="menuIndex !=null">
+                  AND m.menu_index =#{menuIndex}
+                 </if>-->
+            </otherwise>
+
+        </choose>
+    </select>
+
+    <update id="setData" parameterType="java.util.Map">
+        UPDATE
+        menu m SET
+        m.id = #{id}
+        <if test="menuName != null">,m.menu_name = #{menuName}</if>
+        <if test="menuUrl != null">,m.menu_url = #{menuUrl}</if>
+        <if test="parentMenu != null">,m.parent_menu = #{parentMenu}</if>
+        <if test="sort != null">,m.sort = #{sort}</if>
+        <if test="createUserId != null">,m.create_user_id = #{createUserId}</if>
+        <if test="createTime != null">,m.create_time = #{createTime}</if>
+        <if test="menuType != null">,m.menu_type = #{menuType}</if>
+        <if test="menuIndex != null">,m.menu_index = #{menuIndex}</if>
+        <if test="showGroups != null">,m.show_groups = #{showGroups}</if>
+        <if test="languageId != null">,m.language_id = #{languageId}</if>
+        WHERE
+        m.id = #{id}
+    </update>
+
+    <delete id="removeData" parameterType="java.util.Map">
+        DELETE FROM
+        menu  WHERE
+        id = #{id}
+    </delete>
+
+    <insert id="addData" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO menu(menu_name,menu_url,sort,create_user_id,create_time,menu_type,menu_index,show_groups,language_id)
+        VALUES (#{menuName},#{menuUrl},#{sort},#{createUserId},#{createTime},#{menuType},#{menuIndex},#{showGroups},#{languageId})
+    </insert>
+
+
+    <select id="getAllIdShowGroupsList" resultMap="resultMap" parameterType="java.util.Map">
+
+       -- 分组连接
+       select m.`id`,group_concat(u_g.`group_name` order by u_g.`group_name` asc) as show_groups from Menu m
+       left join authority_menu_group a_m_g on m.`id` = a_m_g.`menu_id`
+        left join user_group u_g on u_g.`id` = a_m_g.`group_id`
+       group by m.`id`
+
+    </select>
+
+    <update id="setAllIdShowGroupList" parameterType="java.util.Map">
+        UPDATE
+        menu m SET
+        m.show_groups = CASE m.id
+        <foreach collection="list" item="item" index="index" separator=" ">
+            WHEN #{item.id} THEN #{item.showGroups}
+        </foreach>
+        END
+        WHERE m.id IN
+        (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #{item.id}
+        </foreach>
+        )
+    </update>
+
+</mapper>
+        <!--    <select id="getMenuList" resultMap="menuResultMap" parameterType="java.util.Map" >
+                select
+                <include refid="allColumns"/>
+                from menu m where 1=1
+                <if test="id !=null">
+                   AND m.id = #{id}
+                    <choose>
+                        <when test='idCompare == "&gt;"'></when>
+                        <when test='idCompare == "&gt;="'></when>
+                        <when test='idCompare == "="'></when>
+                        <when test='idCompare == "&lt;"'></when>
+                        <when test='idCompare == "&lt;="'></when>
+                        <otherwise>
+                            /*默认应该是=*/
+                        </otherwise>
+                    </choose>
+                </if>
+                <if test="userName !=null">
+                    <choose>
+                        <when test='idCompare == "&gt;"'></when>
+                        <when test='idCompare == "&gt;="'></when>
+                        <when test='idCompare == "="'></when>
+                        <when test='idCompare == "&lt;"'></when>
+                        <when test='idCompare == "&lt;="'></when>
+                        <otherwise>
+                            /*默认应该是=*/
+                           AND user_name = #{userName}
+                        </otherwise>
+                    </choose>
+                </if>
+            </select>-->

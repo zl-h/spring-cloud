@@ -1,0 +1,35 @@
+##server:
+##  port: 8762
+##eureka:
+##  client:
+##    registerWithEureka: true
+##    fetchRegistry: true
+##    serviceUrl:
+##        defaultZone: http://localhost:8761/
+##  server:
+##    waitTimeInMsWhenSyncEmpty: 0
+#
+##    healthcheck:
+##      enabled: true
+#spring:
+#    datasource:
+##        name: test
+##        url: jdbc:mysql://112.74.115.235:3306/shenghe?useUnicode=true&serverTimezone=UTC&characterEncoding=utf8&useSSL=true
+##        username: app
+##        password: 20170331
+#        # 使用druid数据源
+#        type: com.alibaba.druid.pool.DruidDataSource
+#        driver-class-name: com.mysql.jdbc.Driver
+#        filters: stat
+#        maxActive: 20
+#        initialSize: 1
+#        maxWait: 60000
+#        minIdle: 1
+#        timeBetweenEvictionRunsMillis: 60000
+#        minEvictableIdleTimeMillis: 300000
+#        validationQuery: select 'x'
+#        testWhileIdle: true
+#        testOnBorrow: false
+#        testOnReturn: false
+#        poolPreparedStatements: true
+#        maxOpenPreparedStatements: 20

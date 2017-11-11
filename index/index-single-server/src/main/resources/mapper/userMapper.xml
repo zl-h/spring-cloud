@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.server.mapper.UserMapper">
+    <resultMap  id="resultMap" type="com.shenghe.index.common.entity.User">
+        <id column="id" property="id"/>
+        <result column="user_name" property="userName"/>
+        <result column="true_name" property="trueName"/>
+        <result column="password" property="password"/>
+        <result column="create_time" property="createTime"/>
+        <result column="default_lang" property="defaultLang"/>
+        <result column="default_lang_id" property="defaultLangId"/>
+        <result column="u.create_user_id" property="createUserId"/>
+        <result column="show_groups" property="showGroups"/>
+    </resultMap>
+
+    <sql id="allColumns">
+        id,user_name,true_name,password,create_time,default_lang_id,u.create_user_id,show_groups
+    </sql>
+
+    <select id="getDataList" resultMap="resultMap" parameterType="java.util.Map" >
+        select
+        u.id,u.user_name,u.true_name,u.password,u.create_time,u.default_lang_id,u.create_user_id,
+        group_concat(u_g.`group_name` order by u_g.`group_name` asc) as show_groups
+        ,u_l.user_language as default_lang
+        from user u
+        LEFT JOIN user_language u_l on u_l.id = u.default_lang_id
+        left join authority_user_group a_u_g on u.`id` = a_u_g.`user_id`
+        left join user_group u_g on u_g.`id` = a_u_g.`group_id`
+
+        where 1=1
+        <if test="id != null">
+
+            <choose>
+                <when test='idCompare == "&gt;"'>AND u.id &gt; #{id}</when>
+                <when test='idCompare == "&gt;="'>AND u.id &gt;= #{id}</when>
+                <when test='idCompare == "="'>AND u.id = #{id}</when>
+                <when test='idCompare == "&lt;"'>AND u.id &lt; #{id}</when>
+                <when test='idCompare == "&lt;="'>AND u.id &lt;= #{id}</when>
+                <otherwise>
+                    /*默认应该是=*/
+                 AND   u.id = #{id}
+                </otherwise>
+            </choose>
+        </if>
+        <if test='userName !=null and userName != ""'>
+            <choose>
+                <when test='userNameCompare == "&gt;"'>  AND u.user_name &gt; #{userName}</when>
+                <when test='userNameCompare == "&gt;="'>AND u.user_name &gt; #{userName}</when>
+                <when test='userNameCompare == "="'>AND u.user_name = #{userName}</when>
+                <when test='userNameCompare == "&lt;"'>AND u.user_name &lt; #{userName}</when>
+                <when test='userNameCompare == "&lt;="'>AND u.user_name &lt;= #{userName}</when>
+                <when test='userNameCompare == "like"'>AND u.user_name like '%${userName}%'</when>
+                <when test='userNameCompare == "not like"'>AND u.user_name not like '%${userName}%'</when>
+                <otherwise>
+                    /*默认应该是=*/
+                    AND u.user_name = #{userName}
+                </otherwise>
+            </choose>
+        </if>
+
+
+        <if test='trueName !=null and trueName!= ""'>
+            <choose>
+                <when test='trueNameCompare == "&gt;"'>  AND u.true_name &gt; #{trueName}</when>
+                <when test='trueNameCompare == "&gt;="'>AND u.true_name &gt; #{trueName}</when>
+                <when test='trueNameCompare == "="'>AND u.true_name = #{trueName}</when>
+                <when test='trueNameCompare == "&lt;"'>AND u.true_name &lt; #{trueName}</when>
+                <when test='trueNameCompare == "&lt;="'>AND u.true_name &lt;= #{trueName}</when>
+                <when test='trueNameCompare == "like"'>AND u.true_name like '%${trueName}%'</when>
+                <when test='trueNameCompare == "not like"'>AND u.true_name not like '%${trueName}%'</when>
+                <otherwise>
+                    /*默认应该是=*/
+                    AND u.true_name = #{trueName}
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test='password !=null and password != ""'>
+            <choose>
+                <when test='passwordCompare == "&gt;"'>  AND u.password &gt; #{password}</when>
+                <when test='passwordCompare == "&gt;="'>AND u.password &gt; #{password}</when>
+                <when test='passwordCompare == "="'>AND u.password = #{password}</when>
+                <when test='passwordCompare == "&lt;"'>AND u.password &lt; #{password}</when>
+                <when test='passwordCompare == "&lt;="'>AND u.password &lt;= #{password}</when>
+                <when test='passwordCompare == "like"'>AND u.password like '%${password}%'</when>
+                <when test='passwordCompare == "not like"'>AND u.password not like '%${password}%'</when>
+                <otherwise>
+                    /*默认应该是=*/
+                    AND u.password = #{password}
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test='createTime !=null and createTime !=""'>
+            <choose>
+                <when test='createTimeCompare == "&gt;"'>  AND create_time &gt; #{createTime}</when>
+                <when test='createTimeCompare == "&gt;="'>AND create_time &gt; #{createTime}</when>
+                <when test='createTimeCompare == "="'>AND create_time = #{createTime}</when>
+                <when test='createTimeCompare == "&lt;"'>AND create_time &lt; #{createTime}</when>
+                <when test='createTimeCompare == "&lt;="'>AND create_time &lt;= #{createTime}</when>
+                <when test='createTimeCompare == "like"'>AND create_time like '%${createTime}%'</when>
+                <when test='createTimeCompare == "not like"'>AND create_time not like '%${createTime}%'</when>
+                <otherwise>
+                    /*默认应该是=*/
+                    AND create_time = #{createTime}
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test="languageIdList !=null  and languageIdList.size() > 0">
+            AND u.default_lang_id IN
+            (
+            <foreach collection="languageIdList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+
+        <!-- 查询指定用户组的菜单时 -->
+        <if test="groupIdList !=null  and groupIdList.size() > 0">
+            AND a_u_g.group_id IN
+            (
+            <foreach collection="groupIdList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+
+
+        <if test='createUserId !=null and createUserId != ""'>
+            <choose>
+                <when test='createUserIdCompare == "&gt;"'>  AND u.create_user_id &gt; #{createUserId}</when>
+                <when test='createUserIdCompare == "&gt;="'>AND u.create_user_id &gt; #{createUserId}</when>
+                <when test='createUserIdCompare == "="'>AND u.create_user_id = #{createUserId}</when>
+                <when test='createUserIdCompare == "&lt;"'>AND u.create_user_id &lt; #{createUserId}</when>
+                <when test='createUserIdCompare == "&lt;="'>AND u.create_user_id &lt;= #{createUserId}</when>
+                <when test='createUserIdCompare == "like"'>AND u.create_user_id like '%${createUserId}%'</when>
+                <when test='createUserIdCompare == "not like"'>AND u.create_user_id not like '%${createUserId}%'</when>
+                <otherwise>
+                    /*默认应该是=*/
+                    AND u.create_user_id = #{createUserId}
+                </otherwise>
+            </choose>
+        </if>
+
+
+        
+        <if test="idList !=null  and idList.size() > 0">
+            AND u.id  IN
+            (
+            <foreach collection="idList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        group by u.`id`
+
+        ORDER BY
+
+        <if test='sort1 !=null and sort1 != ""  and sortDescAsc1 != null and sortDescAsc1 != ""'>
+            <!--  #{sort1} #{sortDescAsc1}-->
+            <if test='sort1 == "id"  '> u.id</if>
+            <if test='sort1 == "userName"  '> u.user_uame</if>
+            <if test='sort1 == "trueName"  '> u.true_name</if>
+            <if test='sort1 == "password"  '>,u.password</if>
+            <if test='sort1 == "createTime"  '> u.create_time</if>
+            <if test='sort1 == "defaultLangId"  '>u_l.user_language</if>
+            <if test='sort1 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc) </if>
+
+            <if test='sortDescAsc1 == "desc"'> DESC , </if>
+            <if test='sortDescAsc1 == "asc"'> ASC ,</if>
+        </if>
+
+        <if test='sort2 !=null and sort2 != ""  and sortDescAsc2 != null and sortDescAsc2 != ""'>
+            <!--  #{sort2} #{sortDescAsc2}-->
+            <if test='sort2 == "id"  '> u.id</if>
+            <if test='sort2 == "userName"  '> u.user_uame</if>
+            <if test='sort2 == "trueName"  '> u.true_name</if>
+            <if test='sort2 == "password"  '>,u.password</if>
+            <if test='sort2 == "createTime"  '> u.create_time</if>
+            <if test='sort2 == "defaultLangId"  '>u_l.user_language</if>
+            <if test='sort2 == "showGroups"  '> group_concat(u_g.`group_name`  u_g.`group_name` asc) </if>
+
+            <if test='sortDescAsc2 == "desc"'> DESC , </if>
+            <if test='sortDescAsc2 == "asc"'> ASC ,</if>
+        </if>
+        1
+        /*ORDER BY u.user_name ASC*/
+    </select>
+
+    <update id="setData" parameterType="java.util.Map">
+        UPDATE
+        user u SET
+        u.id = #{id}
+        <if test="userName != null">,u.user_name = #{userName}</if>
+        <if test="trueName != null">,u.true_name = #{trueName}</if>
+        <if test="password != null">,u.password = #{password}</if>
+        <if test="createTime != null">,u.create_time = #{createTime}</if>
+        <if test="defaultLangId != null">,u.default_lang_id = #{defaultLangId}</if>
+        <if test="createUserId != null">,u.u.create_user_id = #{createUserId}</if>
+        <if test="showGroups != null">,u.show_groups = #{showGroups}</if>
+        WHERE
+        u.id = #{id}
+    </update>
+
+    <delete id="removeData" parameterType="java.util.Map">
+        DELETE FROM
+        user  WHERE
+        id = #{id}
+    </delete>
+
+    <insert id="addData" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user(user_name,true_name,password,create_time,default_lang_id,u.create_user_id,show_groups)
+        VALUES (#{userName},#{trueName},#{password},#{createTime},#{defaultLangId},#{createUserId},#{showGroups})
+    </insert>
+
+
+    <select id="getAllIdShowGroupsList" resultMap="resultMap" parameterType="java.util.Map" >
+
+  -- 分组连接
+  select u.`id`,group_concat(u_g.`group_name` order by u_g.`group_name` asc) as show_groups from user u
+left join authority_user_group a_u_g on u.`id` = a_u_g.`user_id`
+left join user_group u_g on u_g.`id` = a_u_g.`group_id`
+group by u.`id`
+
+    </select>
+
+
+    <update id="setAllIdShowGroupList" parameterType="java.util.Map">
+        UPDATE
+        user u SET
+        u.show_groups = CASE u.id
+        <foreach collection="list" item="item" index="index" separator=" ">
+          WHEN #{item.id} THEN #{item.showGroups}
+        </foreach>
+        END
+        WHERE   u.id IN
+        (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #{item.id}
+        </foreach>
+        )
+    </update>
+
+</mapper>

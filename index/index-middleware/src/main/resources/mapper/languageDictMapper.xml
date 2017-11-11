@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.middleware.mapper.LanguageDictMapper">
+    <resultMap  id="resultMap" type="com.shenghe.index.common.entity.LanguageDict">
+        <id column="id" property="id"/>
+        <result column="dict_code" property="dictCode"/>
+        <result column="dict_value" property="dictValue"/>
+        <result column="user_language_id" property="userLanguageId"/>
+        <result column="project_name" property="projectName"/>
+    </resultMap>
+
+    <sql id="allColumns">
+        id,dict_code,dict_value,user_language_id,project_name
+    </sql>
+    <select id="getDataList" resultMap="resultMap" parameterType="java.util.Map" >
+        select
+        <include refid="allColumns"/>
+        from language_dict l_d where 1=1
+        <if test="id !=null">
+           AND l_d.id = #{id}
+            <choose>
+                <when test='idCompare == "&gt;"'></when>
+                <when test='idCompare == "&gt;="'></when>
+                <when test='idCompare == "="'></when>
+                <when test='idCompare == "&lt;"'></when>
+                <when test='idCompare == "&lt;="'></when>
+                <otherwise>
+                    /*默认应该是=*/
+                </otherwise>
+            </choose>
+        </if>
+        <if test="dictCode !=null">
+        AND l_d.dict_code = #{dictCode}
+        </if>
+        <if test="userLanguageId !=null">
+            AND l_d.user_language_id = #{userLanguageId}
+        </if>
+        <if test="projectName !=null">
+            AND l_d.project_name = #{projectName}
+        </if>
+
+    </select>
+
+    <update id="setData" parameterType="java.util.Map">
+        UPDATE
+        user_language u_l SET
+        <if test="userLanguage != null">u_l.user_language = #{userLanguage}</if>
+        <if test="remark != null">,u_l.remark = #{remark}</if>
+        WHERE
+        u_l.id = #{id}
+    </update>
+
+    <delete id="removeData" parameterType="java.util.Map">
+        DELETE FROM
+        user_language  WHERE
+        id = #{id}
+    </delete>
+
+    <insert id="addData" parameterType="java.util.Map">
+        INSERT INTO user_language(user_language,remark)
+        VALUES (#{userLanguage},#{remark})
+    </insert>
+</mapper>

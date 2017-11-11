@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.middleware.mapper.ColumnMapper" >
+    <resultMap id ="BaseResultMap" type="com.shenghe.index.common.antdEntity.AntdColumn" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="title" property="title" />
+        <result column="data_index" property="dataIndex"  />
+        <result column="width" property="width" />
+        <result column="component_type" property="componentType" />
+        <result column="list_key" property="listKey" />
+        <result column="data_key" property="dataKey" />
+        <result column="value_key" property="valueKey" />
+        <result column="system_name" property="systemName" />
+        <result column="modual_name" property="modualName" />
+        <result column="language_id" property="languageId" />
+        <result column="order" property="order" />
+        <result column="editable" property="editable" />
+        <result column="action" property="action" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, title,data_index,width,component_type,list_key,data_key,value_key,system_name,modual_name,language_id,`order`,editable,`action`
+    </sql>
+
+    <select id="getColumns" resultMap="BaseResultMap"  >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM antd_column a_c
+        WHERE
+        1 = 1
+        <if test="systemName != null">and a_c.system_name = #{systemName}</if>
+        <if test="modualName != null">and a_c.modual_name = #{modualName}</if>
+        <if test="languageId != null">and a_c.language_id = #{languageId}</if>
+    </select>
+
+</mapper>

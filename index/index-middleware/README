@@ -1,0 +1,8 @@
+http://localhost:8888/home123
+
+-Dconfig.properties=/C:\Code\java\spring-cloud\index\index-middleware\src\main\conf\config.properties
+-Dlogging.config=/C:\Code\java\spring-cloud\index\index-middleware\src\main\conf\logback.xml
+
+-Dspring.cloud.config.server.native.searchLocations=C:/ERP/Code/svn/SpringCloud/server-config/src/main/conf/common-properties
+
+#属性文件地址，只要指定文件夹的路径

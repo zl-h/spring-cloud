@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shenghe.index.middleware.mapper.GroupMapper">
+    <resultMap  id="resultMap" type="com.shenghe.index.common.entity.Group">
+        <id column="id" property="id"/>
+        <result column="group_name" property="groupName"/>
+        <result column="create_user_id" property="createUserId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="show_users" property="showUsers"/>
+        <result column="show_menus" property="showMenus"/>
+    </resultMap>
+
+    <sql id="allColumns">
+        id,group_name,create_user_id,create_time,show_users,show_menus
+    </sql>
+    <select id="getDataList" resultMap="resultMap" parameterType="java.util.Map" >
+        select DISTINCT
+        u_g.id,u_g.group_name,u_g.create_user_id,u_g.create_time,
+        GROUP_CONCAT(DISTINCT u.`user_name` ORDER BY u.`user_name` ASC)AS show_users,
+        GROUP_CONCAT(DISTINCT m.`menu_name` ORDER BY m.`menu_name` ASC)AS show_menus
+        from user_group u_g
+        LEFT JOIN authority_menu_group a_m_u ON a_m_u.`group_id` = u_g.id
+        LEFT JOIN menu m ON m.`id` = a_m_u.`menu_id`
+        LEFT JOIN authority_user_group a_u_g ON a_u_g.`group_id` = u_g.`id`
+        LEFT JOIN USER u ON u.`id` = a_u_g.`user_id`
+
+        where 1=1
+        <if test="id !=null">
+           AND u_g.id = #{id}
+            <choose>
+                <when test='idCompare == "&gt;"'></when>
+                <when test='idCompare == "&gt;="'></when>
+                <when test='idCompare == "="'></when>
+                <when test='idCompare == "&lt;"'></when>
+                <when test='idCompare == "&lt;="'></when>
+                <otherwise>
+                    /*默认应该是=*/
+                </otherwise>
+            </choose>
+        </if>
+
+
+        <if test="idList !=null  and idList.size() > 0">
+            AND u_g.id  IN
+            (
+            <foreach collection="idList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+
+        GROUP BY u_g.`id`
+    </select>
+
+
+    <select id="getDataListCount" resultType="java.lang.Long" parameterType="java.util.Map" >
+        select count(*) from (
+        select DISTINCT
+        u_g.id,u_g.group_name,u_g.create_user_id,u_g.create_time,
+        GROUP_CONCAT(DISTINCT u.`user_name` ORDER BY u.`user_name` ASC)AS show_users,
+        GROUP_CONCAT(DISTINCT m.`menu_name` ORDER BY m.`menu_name` ASC)AS show_menus
+        from user_group u_g
+        LEFT JOIN authority_menu_group a_m_u ON a_m_u.`group_id` = u_g.id
+        LEFT JOIN menu m ON m.`id` = a_m_u.`menu_id`
+        LEFT JOIN authority_user_group a_u_g ON a_u_g.`group_id` = u_g.`id`
+        LEFT JOIN USER u ON u.`id` = a_u_g.`user_id`
+
+        where 1=1
+        <if test="id !=null">
+            AND u_g.id = #{id}
+            <choose>
+                <when test='idCompare == "&gt;"'></when>
+                <when test='idCompare == "&gt;="'></when>
+                <when test='idCompare == "="'></when>
+                <when test='idCompare == "&lt;"'></when>
+                <when test='idCompare == "&lt;="'></when>
+                <otherwise>
+                    /*默认应该是=*/
+                </otherwise>
+            </choose>
+        </if>
+
+
+        <if test="idList !=null  and idList.size() > 0">
+            AND u_g.id IN
+            (
+            <foreach collection="idList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+
+        GROUP BY u_g.`id`
+        )
+    </select>
+
+
+    <update id="setData" parameterType="java.util.Map">
+        UPDATE
+        user_group u_g SET
+        u_g.id = #{id}
+        <if test="groupName != null">,u_g.group_name = #{groupName}</if>
+        <if test="createUserId != null">,u_g.create_user_id = #{createUserId}</if>
+        <if test="createTime != null">,u_g.create_time = #{createTime}</if>
+        <if test="showUsers != null">,u_g.show_users = #{showUsers}</if>
+        <if test="showMenus != null">,u_g.show_menus = #{showMenus}</if>
+        WHERE
+        u_g.id = #{id}
+    </update>
+
+    <delete id="removeData" parameterType="java.util.Map">
+        DELETE FROM
+        user_group  WHERE
+        id = #{id}
+    </delete>
+
+    <insert id="addData" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_group(group_name,create_user_id,create_time,show_users,show_menus)
+        VALUES (#{groupName},#{createUserId},#{createTime},#{showUsers},#{showMenus})
+    </insert>
+
+    <select id="getAllIdShowUserMenusList" resultMap="resultMap" parameterType="java.util.Map">
+
+        -- 分组连接
+       SELECT g.`id`,GROUP_CONCAT(DISTINCT m.`menu_name` ORDER BY m.`menu_name` ASC)AS show_menus,
+GROUP_CONCAT(DISTINCT u.`user_name` ORDER BY u.`user_name` ASC)AS show_users
+FROM user_group g
+LEFT JOIN authority_menu_group a_m_u ON a_m_u.`group_id` = g.id
+LEFT JOIN menu m ON m.`id` = a_m_u.`menu_id`
+LEFT JOIN authority_user_group a_u_g ON a_u_g.`group_id` = g.`id`
+LEFT JOIN USER u ON u.`id` = a_u_g.`user_id`
+GROUP BY g.`id`
+
+    </select>
+
+
+    <update id="setAllIdShowUserMenuList" parameterType="java.util.Map">
+        UPDATE
+        user_group g SET
+        g.show_users = CASE g.id
+        <foreach collection="list" item="item" index="index" separator=" ">
+            WHEN #{item.id} THEN #{item.showUsers}
+        </foreach>
+        END,
+        g.show_menus = CASE g.id
+        <foreach collection="list" item="item" index="index" separator=" ">
+            WHEN #{item.id} THEN #{item.showMenus}
+        </foreach>
+        END
+        WHERE g.id IN
+        (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #{item.id}
+        </foreach>
+        )
+    </update>
+</mapper>
